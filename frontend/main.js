@@ -254,6 +254,7 @@ class ClassroomScene {
     playerObject;
     dynamicObjects = [];
     interactiveObjects = [];
+    chairZones = [];
 
     constructor(width, height) {
         this.screenWidth = width;
@@ -308,6 +309,7 @@ class ClassroomScene {
             [[374, 237], 34, 30], [[374, 204], 34, 30], [[374, 174], 34, 30], [[374, 142], 34, 30]
         ]
         for (const zone of chairZones) this.interactiveObjects.push(new InteractiveObject(zone[0][0], zone[0][1], zone[1], zone[2]));
+        for (const zone of chairZones) this.chairZones.push(new InteractiveObject(zone[0][0], zone[0][1], zone[1], zone[2]));
     }
 
     resize(width, height) {
@@ -343,13 +345,102 @@ class ClassroomScene {
     handleClick(event) {
         let mousePos = this.getRelMousePos(event);
         console.log(mousePos);
-        let route = [
-            {x: 420, y: 292},
-            {x: 360, y: 288},
-            {x: 360, y: 200}
-        ];
-        this.playerObject.setMovementRoute(route);
-        this.playerObject.setMovementSpeed(30);
+        let route = [];
+        for (let i = 0; i < this.chairZones.length; i++) {
+            const chair = this.chairZones[i];
+            if(this.isInInteractiveObject(mousePos.x, mousePos.y, chair)) {
+                switch (i) {
+                    case 0:
+                        route = [
+                            {x: 420, y: 292},
+                            {x: 232, y: 292},
+                            {x: 232, y: 263}
+                        ];
+                        break;
+                    case 1:
+                        route = [
+                            {x: 420, y: 292},
+                            {x: 232, y: 292},
+                            {x: 232, y: 231}
+                        ];
+                        break;
+                    case 2:
+                        route = [
+                            {x: 420, y: 292},
+                            {x: 232, y: 292},
+                            {x: 232, y: 200}
+                        ];
+                        break;
+                    case 3:
+                        route = [
+                            {x: 420, y: 292},
+                            {x: 232, y: 292},
+                            {x: 232, y: 166}
+                        ];
+                        break;
+                    case 4:
+                        route = [
+                            {x: 420, y: 292},
+                            {x: 295, y: 292},
+                            {x: 295, y: 263}
+                        ];
+                        break;
+                    case 5:
+                        route = [
+                            {x: 420, y: 292},
+                            {x: 295, y: 292},
+                            {x: 295, y: 231}
+                        ];
+                        break;
+                    case 6:
+                        route = [
+                            {x: 420, y: 292},
+                            {x: 295, y: 292},
+                            {x: 295, y: 200}
+                        ];
+                        break;
+                    case 7:
+                        route = [
+                            {x: 420, y: 292},
+                            {x: 295, y: 292},
+                            {x: 295, y: 166}
+                        ];
+                        break;
+                    case 8:
+                        route = [
+                            {x: 420, y: 292},
+                            {x: 360, y: 292},
+                            {x: 360, y: 263}
+                        ];
+                        break;
+                    case 9:
+                        route = [
+                            {x: 420, y: 292},
+                            {x: 360, y: 288},
+                            {x: 360, y: 200}
+                        ];
+                        break;
+                    case 10:
+                        route = [
+                            {x: 420, y: 292},
+                            {x: 360, y: 292},
+                            {x: 360, y: 200}
+                        ];
+                        break;
+                    case 11:
+                        route = [
+                            {x: 420, y: 292},
+                            {x: 360, y: 292},
+                            {x: 360, y: 166}
+                        ];
+                        break;
+                }
+            }
+        }
+        if (route.length > 1) {
+            this.playerObject.setMovementRoute(route);
+            this.playerObject.setMovementSpeed(30);
+        }
     }
 
     handleHover(event) {
@@ -365,7 +456,7 @@ class ClassroomScene {
         }
     }
 
-    // returns true if the (relative) coordinates are withing the given zone.
+    // returns true if the (relative) coordinates are within the given zone.
     isInInteractiveObject(x, y, iObj) {
         if (x > iObj.position.x && x < iObj.position.x+iObj.width){
             if (y > iObj.position.y && y < iObj.position.y+iObj.height) {
