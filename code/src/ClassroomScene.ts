@@ -2,6 +2,21 @@ import Scene from './Scene';
 import Vector from './Vector';
 import InteractiveObject from './InteractiveObject';
 import Globals from './Globals';
+import DynamicObject from './DynamicObject';
+
+// resource paths
+// classroom
+const ClassroomRender: string =
+    '/resources/scenes/classroom/ClassroomRender.png';
+const ClassroomLight: string =
+    '/resources/scenes/classroom/ClassroomLight.png';
+
+// female student
+const Femalestudentwalkingeast: string = '../resources/characters/female_student/Femalestudentwalkingeast-sheet.png';
+const Femalestudentwalkingnorth: string = '../resources/characters/female_student/Femalestudentwalkingnorth-sheet.png';
+const Femalestudentwalkingsouth: string = '../resources/characters/female_student/Femalestudentwalkingsouth-sheet.png';
+const Femalestudentwalkingwest: string = '../resources/characters/female_student/Femalestudentwalkingwest-sheet.png';
+
 
 export default class ClassroomScene implements Scene {
     // the scenes canvas location
@@ -13,11 +28,11 @@ export default class ClassroomScene implements Scene {
     screenHeight: number;
 
     // the canvas ctx
-    staticCtx: CanvasRenderingContext2D;
-    dynamicCtx: CanvasRenderingContext2D;
+    staticCtx!: CanvasRenderingContext2D;
+    dynamicCtx!: CanvasRenderingContext2D;
 
-    staticCanvas: HTMLCanvasElement;
-    dynamicCanvas: HTMLCanvasElement;
+    staticCanvas!: HTMLCanvasElement;
+    dynamicCanvas!: HTMLCanvasElement;
 
     // the pixel size of the original scene art
     readonly originalWidth: number = 684;
@@ -35,7 +50,7 @@ export default class ClassroomScene implements Scene {
     // apply additional scaling
     zoomFactor: number = 1.1;
 
-    playerObject: DynamicObject;
+    playerObject!: DynamicObject;
     dynamicObjects: DynamicObject[] = [];
 
     // an array containing all InteractiveObjects in the scene
@@ -113,93 +128,94 @@ export default class ClassroomScene implements Scene {
     handleClick(event: MouseEvent) {
         const mousePos: Vector = this.getRelMousePos(event);
         console.log(mousePos);
-        let route: any = []; // TODO: replace the entire system lol
+        let route: Vector[] = []; // TODO: replace the entire system lol
         for (let i = 0; i < this.chairZones.length; i++) {
             const chair = this.chairZones[i];
             if (this.isWithinInteractiveObject(mousePos, chair)) {
+                console.log('hit chair')
                 switch (i) {
                     case 0:
                         route = [
-                        { x: 420, y: 292 },
-                        { x: 232, y: 292 },
-                        { x: 232, y: 263 },
+                        new Vector(420, 292),
+                        new Vector(232, 292),
+                        new Vector(232, 263)
                     ];
                     break;
                     case 1:
                         route = [
-                        { x: 420, y: 292 },
-                        { x: 232, y: 292 },
-                        { x: 232, y: 231 },
+                        new Vector(420, 292),
+                        new Vector(232, 292),
+                        new Vector(232, 231)
                     ];
                     break;
                     case 2:
                         route = [
-                        { x: 420, y: 292 },
-                        { x: 232, y: 292 },
-                        { x: 232, y: 200 },
+                        new Vector(420, 292),
+                        new Vector(232, 292),
+                        new Vector(232, 200)
                     ];
                     break;
                     case 3:
                         route = [
-                        { x: 420, y: 292 },
-                        { x: 232, y: 292 },
-                        { x: 232, y: 166 },
+                        new Vector(420, 292),
+                        new Vector(232, 292),
+                        new Vector(232, 166)
                     ];
                     break;
                     case 4:
                         route = [
-                        { x: 420, y: 292 },
-                        { x: 295, y: 292 },
-                        { x: 295, y: 263 },
+                        new Vector(420, 292),
+                        new Vector(295, 292),
+                        new Vector(295, 263)
                     ];
                     break;
                     case 5:
                         route = [
-                        { x: 420, y: 292 },
-                        { x: 295, y: 292 },
-                        { x: 295, y: 231 },
+                        new Vector(420, 292),
+                        new Vector(295, 292),
+                        new Vector(295, 231)
                     ];
                     break;
                     case 6:
                         route = [
-                        { x: 420, y: 292 },
-                        { x: 295, y: 292 },
-                        { x: 295, y: 200 },
+                        new Vector(420, 292),
+                        new Vector(295, 292),
+                        new Vector(295, 200)
                     ];
                     break;
                     case 7:
                         route = [
-                        { x: 420, y: 292 },
-                        { x: 295, y: 292 },
-                        { x: 295, y: 166 },
+                        new Vector(420, 292),
+                        new Vector(295, 292),
+                        new Vector(295, 166)
                     ];
                     break;
                     case 8:
                         route = [
-                        { x: 420, y: 292 },
-                        { x: 360, y: 292 },
-                        { x: 360, y: 263 },
+                        new Vector(420, 292),
+                        new Vector(360, 292),
+                        new Vector(360, 263)
                     ];
                     break;
                     case 9:
                         route = [
-                        { x: 420, y: 292 },
-                        { x: 360, y: 288 },
-                        { x: 360, y: 200 },
+                        new Vector(420, 292),
+                        new Vector(360, 288),
+                        new Vector(360, 200)
                     ];
                     break;
                     case 10:
                         route = [
-                        { x: 420, y: 292 },
-                        { x: 360, y: 292 },
-                        { x: 360, y: 200 },
+                        new Vector(420, 292),
+                        new Vector(360, 292),
+                        new Vector(360, 200)
                     ];
                     break;
                     case 11:
                         route = [
-                        { x: 420, y: 292 },
-                        { x: 360, y: 292 },
-                        { x: 360, y: 166 },
+                        new Vector(420, 292),
+                        new Vector(360, 292),
+                        new Vector(360, 166)
                     ];
                     break;
                     default:
@@ -214,7 +230,7 @@ export default class ClassroomScene implements Scene {
     }
 
     handleHover(event: MouseEvent): void {
-        gCurrMousePos = this.getRelMousePos(event);
+        Globals.setCurrentMousePos(this.getRelMousePos(event));
     }
 
     getMousePos(event: MouseEvent): Vector {
@@ -223,8 +239,8 @@ export default class ClassroomScene implements Scene {
 
     // returns true if the (relative) coordinates are within the given zone.
     isWithinInteractiveObject(pos: Vector, iObj: InteractiveObject): boolean {
-        if (pos.x > iObj.position.x && pos.x < iObj.position.x + iObj.width) {
-            if (pos.y > iObj.position.y && pos.y < iObj.position.y + iObj.height) {
+        if (pos.x > iObj.position.x * this.sizeFactor && pos.x < iObj.position.x * this.sizeFactor + iObj.width * this.sizeFactor) {
+            if (pos.y > iObj.position.y * this.sizeFactor && pos.y < iObj.position.y * this.sizeFactor + iObj.height * this.sizeFactor) {
                 return true;
             }
         }
@@ -260,12 +276,22 @@ export default class ClassroomScene implements Scene {
         else throw new TypeError("Static context was null!")
 
         // disable smoothing out pixels
-        this.dynamicCtx.imageSmoothingEnabled = false;
+        this.staticCtx.imageSmoothingEnabled = false;
     }
 
     private resizeStaticLayer() {
         this.staticCanvas.width = this.realWidth;
         this.staticCanvas.height = this.realHeight;
+
+        // the ctx has to be fetched again, otherwise the image will get blurry for some reason.
+        // get ctx
+        const ctx: CanvasRenderingContext2D|null =
+            this.staticCanvas.getContext('2d');
+        if(ctx) this.staticCtx = ctx as CanvasRenderingContext2D;
+        else throw new TypeError("Static context was null!")
+
+        // disable smoothing out pixels
+        this.staticCtx.imageSmoothingEnabled = false;
     }
 
     drawStaticLayer(): void {
@@ -303,6 +329,16 @@ export default class ClassroomScene implements Scene {
     private resizeDynamicLayer(): void {
         this.dynamicCanvas.width = this.realWidth;
         this.dynamicCanvas.height = this.realHeight;
+
+        // the ctx has to be fetched again, otherwise the image will get blurry for some reason.
+        // get ctx
+        const ctx: CanvasRenderingContext2D|null =
+            this.dynamicCanvas.getContext('2d');
+        if(ctx) this.dynamicCtx = ctx as CanvasRenderingContext2D;
+        else throw new TypeError("Dynamic context was null!")
+
+        // disable smoothing out pixels
+        this.dynamicCtx.imageSmoothingEnabled = false;
     }
 
     drawDynamicLayer() {
@@ -325,7 +361,7 @@ export default class ClassroomScene implements Scene {
         ctx.globalCompositeOperation = 'destination-atop';
         drawDynObj(this);
 
-        if (gDEBUG) {
+        if (Globals.DEBUG) {
             ctx.globalCompositeOperation = 'source-over';
             for (const iObj of this.interactiveObjects) {
                 ctx.beginPath();
@@ -354,12 +390,13 @@ export default class ClassroomScene implements Scene {
 
         // make object
         const userCharacter: DynamicObject =
-            new DynamicObject(32, 32, userCharacterSprite, 8, 5.5);
+            new DynamicObject(32, 32,
+                              userCharacterSprite,
+                              8, 5.5,
+                              [Femalestudentwalkingnorth, Femalestudentwalkingwest, Femalestudentwalkingsouth, Femalestudentwalkingeast],
+                              [Femalestudentwalkingnorth, Femalestudentwalkingwest, Femalestudentwalkingsouth, Femalestudentwalkingeast],
+                             );
         userCharacter.setPos(400, 400);
-        userCharacter.setSprites(
-            [Femalestudentwalkingnorth, Femalestudentwalkingwest, Femalestudentwalkingsouth, Femalestudentwalkingeast],
-            [Femalestudentwalkingnorth, Femalestudentwalkingwest, Femalestudentwalkingsouth, Femalestudentwalkingeast],
-        );
 
         this.playerObject = userCharacter;
         this.dynamicObjects.push(userCharacter);

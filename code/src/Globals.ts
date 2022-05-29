@@ -1,21 +1,36 @@
 import Vector from './Vector';
 import Animator from './Animator';
+import Scene from './Scene';
 
 export default class Globals {
-    static #currentMousePosition: Vector = new Vector(0, 0);
+    // config fields
+    static DEBUG: boolean = true;
 
+    // mouse position
+    static _currentMousePosition: Vector = new Vector(0, 0);
     static getCurrentMousePos(): Vector {
-        return this.#currentMousePosition;
+        return this._currentMousePosition;
     }
     static setCurrentMousePos(pos: Vector): void {
-        this.#currentMousePosition = pos;
+        this._currentMousePosition = pos;
     }
 
-    static #activeAnimator: Animator;
+    // animator
+    static _activeAnimator: Animator;
     static getActiveAnimator(): Animator {
-        return this.#activeAnimator;
+        return this._activeAnimator;
     }
     static setActiveAnimator(anim: Animator): void {
-        this.#activeAnimator = anim;
+        this._activeAnimator = anim;
     }
+
+    // scene
+    static _activeScene: Scene;
+    static getActiveScene(): Scene {
+        return this._activeScene;
+    }
+    static setActiveScene(scene: Scene): void {
+        this._activeScene = scene;
+    }
+
 }

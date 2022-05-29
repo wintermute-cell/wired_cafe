@@ -18,14 +18,14 @@ export default class Vector {
         );
     }
 
-    distanceTo(other: Vector) {
+    distanceTo(other: Vector): number {
         return Math.sqrt(
             (this.x - other.x) ** 2 +
                 (this.y - other.y) ** 2
         );
     }
 
-    normalized() {
+    normalized(): Vector {
         const len = this.length();
         if(len !== 0)
             return new Vector(this.x / len, this.y / len);

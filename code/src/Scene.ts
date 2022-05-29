@@ -1,5 +1,6 @@
 import Vector from './Vector';
 import InteractiveObject from './InteractiveObject';
+import DynamicObject from './DynamicObject';
 
 export default interface Scene {
     // the scenes canvas location

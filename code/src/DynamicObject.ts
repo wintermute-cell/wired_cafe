@@ -2,32 +2,32 @@ import Globals from './Globals';
 import Vector from './Vector';
 import Scene from './Scene';
 
-class DynamicObject {
-  height: number;
-  width: number;
+export default class DynamicObject {
+    height: number;
+    width: number;
 
-  sprite: HTMLImageElement;
+    sprite: HTMLImageElement;
 
-  // N, W, S, E
-  spritesIdle: [
-      HTMLImageElement,
-      HTMLImageElement,
-      HTMLImageElement,
-      HTMLImageElement];
+    // N, W, S, E
+    spritesIdle!: [
+        HTMLImageElement,
+        HTMLImageElement,
+        HTMLImageElement,
+        HTMLImageElement];
 
-  // N, W, S, E
-  spritesWalk: [
-      HTMLImageElement,
-      HTMLImageElement,
-      HTMLImageElement,
-      HTMLImageElement];
+    // N, W, S, E
+    spritesWalk!: [
+        HTMLImageElement,
+        HTMLImageElement,
+        HTMLImageElement,
+        HTMLImageElement];
 
   position: Vector; // current x, y position
 
   movementRoute: Vector[] = []; // a list of x, y position objects
-  positionOnRoute: number; // an index of the current position in the above route
+  positionOnRoute: number = 0; // an index of the current position in the above route
   movementSpeed: number;
-  distToNextPoint: number;
+  distToNextPoint: number = 0;
 
   animationStep: number = 0; // current animation frame of the sprite-sheet
   animationFrames: number; // total amount of animation frames in sprite-sheet
@@ -37,7 +37,11 @@ class DynamicObject {
   // to prevent double animation calls in one frame
   lastTime: number = 0;
 
-  constructor(height, width, sprite, animationFrames, animationSpeed) {
+  constructor(height: number,
+              width: number,
+              sprite: HTMLImageElement,
+              animationFrames: number, animationSpeed: number,
+              idleSpritePaths: string[], walkSpritePaths: string[]) {
     this.height = height;
     this.width = width;
     this.sprite = sprite;
@@ -45,6 +49,7 @@ class DynamicObject {
     this.animationSpeed = animationSpeed;
     this.position = new Vector(0, 0);
     this.movementSpeed = 0;
+    this.setSprites(idleSpritePaths, walkSpritePaths);
   }
 
   setSprites(idleSpritePaths: string[], walkSpritePaths: string[]) {
@@ -68,9 +73,9 @@ class DynamicObject {
     });
     this.movementRoute = adjustedRoute;
     this.positionOnRoute = 0;
-    const firstPoint = route[0];
+    const firstPoint: Vector = route[0];
     this.setPos(firstPoint.x, firstPoint.y);
-    this.distToNextPoint = distVectors(firstPoint, route[1]);
+    this.distToNextPoint = firstPoint.distanceTo(route[1]);
   }
 
   setMovementSpeed(speed: number): void {
@@ -109,7 +114,7 @@ class DynamicObject {
       const normDirection: Vector = direction.normalized();
 
       // this will be used a couple times, so make is short
-      const deltaTime = Globals.getActiveAnimator().deltaTime;
+      const deltaTime: number = Globals.getActiveAnimator().getDeltaTime();
       // check if route point already reached
       this.distToNextPoint -=
           this.movementSpeed * deltaTime;
@@ -120,10 +125,8 @@ class DynamicObject {
         // only calculate the next distance only if the end hasn't
         // been reached yet.
         if (this.positionOnRoute < this.movementRoute.length - 1) {
-          this.distToNextPoint = distVectors(
-            this.position,
-            this.movementRoute[this.positionOnRoute + 1],
-          );
+          this.distToNextPoint = this.position.distanceTo(
+              this.movementRoute[this.positionOnRoute + 1]);
         }
       } else {
         this.setPos(
@@ -142,7 +145,7 @@ class DynamicObject {
     // if the obj is rendered multiple times by comparing the last timestamp with the current one
     if (this.lastTime !== Globals.getActiveAnimator().currTime) {
       this.animationStep +=
-          Globals.getActiveAnimator().deltaTime * this.animationSpeed;
+          Globals.getActiveAnimator().getDeltaTime() * this.animationSpeed;
       if (this.animationStep > this.animationFrames) this.animationStep = 0;
     }
     this.lastTime = Globals.getActiveAnimator().currTime;

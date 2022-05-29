@@ -1,38 +1,34 @@
-import Scene from 'Scene';
+import Scene from './Scene';
 
 export default class Animator {
-  #scene: Scene;
-  #lastTime: number;
-  #deltaTime: number;
-  currTime: number;
-  constructor(scene: Scene) {
-    this.#scene = scene;
-    this.#lastTime = 0;
-    this.#deltaTime = 0;
-    this.currTime = 0;
-  }
+    _scene: Scene;
+    _lastTime: number;
+    _deltaTime: number;
+    currTime: number = 0;
+    constructor(scene: Scene) {
+        this._scene = scene;
+        this._lastTime = 0;
+        this._deltaTime = 0;
+    }
 
-  #drawFrame(): void {
-    this.#scene.drawStaticLayer();
-    this.#scene.drawDynamicLayer();
-  }
+    _drawFrame(): void {
+        this._scene.drawStaticLayer();
+        this._scene.drawDynamicLayer();
+    }
 
-  getDeltaTime(): number {
-      return this.#deltaTime;
-  }
+    getDeltaTime(): number {
+        return this._deltaTime;
+    }
 
-  animate(currTime: number) {
-    let fixedCurrTime: number;
-    if (!currTime) fixedCurrTime = 0;
-    else fixedCurrTime = currTime;
-    this.currTime = fixedCurrTime;
+    animate(currTime: number = 0) {
+        this.currTime = currTime; // make this available for the scene
 
-    this.#deltaTime = (currTime - this.#lastTime) / 1000; // convert milliseconds to second fractions
-    this.#lastTime = currTime;
+        this._deltaTime = (currTime - this._lastTime) / 1000; // convert milliseconds to second fractions
+        this._lastTime = currTime;
 
-    this.#scene.runGameLoop();
-    this.#scene.clearScreen();
-    this.#drawFrame();
-    requestAnimationFrame(this.animate.bind(this));
-  }
+        this._scene.runGameLoop();
+        this._scene.clearScreen();
+        this._drawFrame();
+        requestAnimationFrame(this.animate.bind(this));
+    }
 }
