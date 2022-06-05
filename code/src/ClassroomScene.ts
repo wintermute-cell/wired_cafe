@@ -3,6 +3,10 @@ import Vector from './Vector';
 import InteractiveObject from './InteractiveObject';
 import Globals from './Globals';
 import DynamicObject from './DynamicObject';
+import AnimationMode from './AnimationMode';
+import Helper from './Helper';
+import RouteGraph from './RouteGraph';
+import RouteNode from './RouteNode';
 
 // resource paths
 // classroom
@@ -16,6 +20,8 @@ const Femalestudentwalkingeast: string = '../resources/characters/female_student
 const Femalestudentwalkingnorth: string = '../resources/characters/female_student/Femalestudentwalkingnorth-sheet.png';
 const Femalestudentwalkingsouth: string = '../resources/characters/female_student/Femalestudentwalkingsouth-sheet.png';
 const Femalestudentwalkingwest: string = '../resources/characters/female_student/Femalestudentwalkingwest-sheet.png';
+
+const Femalestudentsitting: string = '../resources/characters/female_student/Femalestudentsitting.png'
 
 
 export default class ClassroomScene implements Scene {
@@ -57,6 +63,8 @@ export default class ClassroomScene implements Scene {
     interactiveObjects: InteractiveObject[] = [];
 
     chairZones: InteractiveObject[] = [];
+
+    routeGraph!: RouteGraph;
 
     constructor(screenWidth: number, screenHeight: number) {
         this.left = 0;
@@ -127,105 +135,20 @@ export default class ClassroomScene implements Scene {
 
     handleClick(event: MouseEvent) {
         const mousePos: Vector = this.getRelMousePos(event);
-        console.log(mousePos);
-        let route: Vector[] = []; // TODO: replace the entire system lol
+        if (Globals.DEBUG) console.log(mousePos);
         for (let i = 0; i < this.chairZones.length; i++) {
             const chair = this.chairZones[i];
             if (this.isWithinInteractiveObject(mousePos, chair)) {
-                console.log('hit chair')
-                switch (i) {
-                    case 0:
-                        route = [
-                        new Vector(420, 292),
-                        new Vector(232, 292),
-                        new Vector(232, 263)
-                    ];
-                    break;
-                    case 1:
-                        route = [
-                        new Vector(420, 292),
-                        new Vector(232, 292),
-                        new Vector(232, 231)
-                    ];
-                    break;
-                    case 2:
-                        route = [
-                        new Vector(420, 292),
-                        new Vector(232, 292),
-                        new Vector(232, 200)
-                    ];
-                    break;
-                    case 3:
-                        route = [
-                        new Vector(420, 292),
-                        new Vector(232, 292),
-                        new Vector(232, 166)
-                    ];
-                    break;
-                    case 4:
-                        route = [
-                        new Vector(420, 292),
-                        new Vector(295, 292),
-                        new Vector(295, 263)
-                    ];
-                    break;
-                    case 5:
-                        route = [
-                        new Vector(420, 292),
-                        new Vector(295, 292),
-                        new Vector(295, 231)
-                    ];
-                    break;
-                    case 6:
-                        route = [
-                        new Vector(420, 292),
-                        new Vector(295, 292),
-                        new Vector(295, 200)
-                    ];
-                    break;
-                    case 7:
-                        route = [
-                        new Vector(420, 292),
-                        new Vector(295, 292),
-                        new Vector(295, 166)
-                    ];
-                    break;
-                    case 8:
-                        route = [
-                        new Vector(420, 292),
-                        new Vector(360, 292),
-                        new Vector(360, 263)
-                    ];
-                    break;
-                    case 9:
-                        route = [
-                        new Vector(420, 292),
-                        new Vector(360, 288),
-                        new Vector(360, 200)
-                    ];
-                    break;
-                    case 10:
-                        route = [
-                        new Vector(420, 292),
-                        new Vector(360, 292),
-                        new Vector(360, 200)
-                    ];
-                    break;
-                    case 11:
-                        route = [
-                        new Vector(420, 292),
-                        new Vector(360, 292),
-                        new Vector(360, 166)
-                    ];
-                    break;
-                    default:
-                        break;
+                console.log('in chair');
+                if (true) { // TODO: if server says the seat is empty
+                    this.playerObject.setMovementRoute(
+                        this.routeGraph.getRoute(
+                            this.playerObject.routePosition, this.routeGraph.getClosestNodeTo(chair.position)
+                        )
+                    )
                 }
+                break // no need to look at the other chairs
             }
-        }
-        if (route.length > 1) {
-            this.playerObject.setMovementRoute(route);
-            this.playerObject.setMovementSpeed(30);
         }
     }
 
@@ -239,8 +162,8 @@ export default class ClassroomScene implements Scene {
 
     // returns true if the (relative) coordinates are within the given zone.
     isWithinInteractiveObject(pos: Vector, iObj: InteractiveObject): boolean {
-        if (pos.x > iObj.position.x * this.sizeFactor && pos.x < iObj.position.x * this.sizeFactor + iObj.width * this.sizeFactor) {
-            if (pos.y > iObj.position.y * this.sizeFactor && pos.y < iObj.position.y * this.sizeFactor + iObj.height * this.sizeFactor) {
+        if (pos.x > iObj.position.x && pos.x < iObj.position.x + iObj.width) {
+            if (pos.y > iObj.position.y && pos.y < iObj.position.y + iObj.height) {
                 return true;
             }
         }
@@ -249,8 +172,8 @@ export default class ClassroomScene implements Scene {
 
     getRelMousePos(event: MouseEvent): Vector {
         const pos = new Vector(
-            event.offsetX,
-            event.offsetY
+            event.offsetX / this.sizeFactor,
+            event.offsetY / this.sizeFactor
         );
         return pos
     }
@@ -346,6 +269,7 @@ export default class ClassroomScene implements Scene {
 
          // this has to be done two times so i packaged it in a func
         function drawDynObj(scene: Scene): void {
+            scene.dynamicObjects.sort((a, b) => (a.position.y > b.position.y) ? 1 : -1) // render lower positions in front
             for (const dynObj of scene.dynamicObjects) {
                 dynObj.draw(ctx, scene);
             }
@@ -363,6 +287,7 @@ export default class ClassroomScene implements Scene {
 
         if (Globals.DEBUG) {
             ctx.globalCompositeOperation = 'source-over';
+            // draw interactives
             for (const iObj of this.interactiveObjects) {
                 ctx.beginPath();
                 ctx.lineWidth = 2;
@@ -380,27 +305,135 @@ export default class ClassroomScene implements Scene {
                     iObj.height * this.sizeFactor);
                 ctx.stroke();
             }
+
+            // draw route graph
+            for (const node of this.routeGraph.nodes) {
+                // draw paths to neighburs
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = 'green';
+                for (const n of node.neighbours) {
+                    ctx.beginPath();
+                    ctx.moveTo(node.position.x * this.sizeFactor, node.position.y * this.sizeFactor);
+                    ctx.lineTo(n.position.x * this.sizeFactor, n.position.y * this.sizeFactor);
+                    ctx.stroke();
+                }
+
+                // draw nodes
+                ctx.beginPath();
+                ctx.fillStyle = 'green';
+
+                ctx.fillRect(
+                    (node.position.x * this.sizeFactor) - 3 * this.sizeFactor,
+                    node.position.y * this.sizeFactor - 3 * this.sizeFactor,
+                    6 * this.sizeFactor,
+                    6 * this.sizeFactor);
+                ctx.stroke();
+            }
+
+            // draw dynamics
+            for (const dynObj of this.dynamicObjects) {
+                ctx.beginPath();
+                ctx.fillStyle = 'blue';
+
+                const p: Vector = dynObj.getPos();
+                ctx.fillRect(
+                    p.x * this.sizeFactor,
+                    p.y * this.sizeFactor,
+                    3 * this.sizeFactor,
+                    2 * this.sizeFactor);
+                ctx.stroke();
+            }
         }
     }
 
-    defGameLogic(): void {
+    createRouteGraph() {
+        const nodes: RouteNode[] = [];
+
+        // create new node and add to list
+        function nn(x: number, y: number): RouteNode {
+            let n: RouteNode = new RouteNode(x, y);
+            nodes.push(n)
+            return n
+        }
+
+        // bottom of screen, door and below rows
+        let at_door = nn(418, 286);
+        let below_first_row = nn(358, 286);
+        at_door.addBidNeighbour(below_first_row);
+
+        let below_sec_row = nn(294, 286);
+        below_first_row.addBidNeighbour(below_sec_row);
+
+        let below_thrd_row = nn(230, 286);
+        below_sec_row.addBidNeighbour(below_thrd_row);
+
+        // first row
+        let fr_first = nn(358, 263);
+        let fr_sec = nn(358, 231);
+        let fr_thrd = nn(358, 199);
+        let fr_frth = nn(358, 167);
+        below_first_row.addBidNeighbour(fr_first);
+        fr_first.addBidNeighbour(fr_sec);
+        fr_sec.addBidNeighbour(fr_thrd);
+        fr_thrd.addBidNeighbour(fr_frth);
+
+        // second row
+        let sc_first = nn(294, 263);
+        let sc_sec = nn(294, 231);
+        let sc_thrd = nn(294, 199);
+        let sc_frth = nn(294, 167);
+        below_sec_row.addBidNeighbour(sc_first);
+        sc_first.addBidNeighbour(sc_sec);
+        sc_sec.addBidNeighbour(sc_thrd);
+        sc_thrd.addBidNeighbour(sc_frth);
+
+        // third row
+        let th_first = nn(230, 263);
+        let th_sec = nn(230, 231);
+        let th_thrd = nn(230, 199);
+        let th_frth = nn(230, 167);
+        below_thrd_row.addBidNeighbour(th_first);
+        th_first.addBidNeighbour(th_sec);
+        th_sec.addBidNeighbour(th_thrd);
+        th_thrd.addBidNeighbour(th_frth);
+
+        // add all the nodes to the scenes graph
+        this.routeGraph = new RouteGraph(nodes);
+    }
+
+    createPlayer() {
         // get sprite
         const userCharacterSprite: HTMLImageElement = new Image();
         userCharacterSprite.src = Femalestudentwalkingeast;
 
-        // make object
-        const userCharacter: DynamicObject =
-            new DynamicObject(32, 32,
-                              userCharacterSprite,
-                              8, 5.5,
-                              [Femalestudentwalkingnorth, Femalestudentwalkingwest, Femalestudentwalkingsouth, Femalestudentwalkingeast],
-                              [Femalestudentwalkingnorth, Femalestudentwalkingwest, Femalestudentwalkingsouth, Femalestudentwalkingeast],
-                             );
-        userCharacter.setPos(400, 400);
+        const userCharacter: DynamicObject = new DynamicObject(32, 32, userCharacterSprite, this.routeGraph.nodes[0]);
+        userCharacter.setMovementSpeed(30);
+        userCharacter.addAnimationMode('walking',
+            new AnimationMode(
+                Helper.PathsToImgs([Femalestudentwalkingnorth, Femalestudentwalkingwest, Femalestudentwalkingsouth, Femalestudentwalkingeast]),
+                8, 5.5
+            )
+        );
+        userCharacter.addAnimationMode('idle',
+            new AnimationMode( // TODO: put actual idle animations here goddamn
+                Helper.PathsToImgs([Femalestudentwalkingnorth, Femalestudentwalkingwest, Femalestudentwalkingsouth, Femalestudentwalkingeast]),
+                8, 5.5
+            )
+        );
+        userCharacter.addAnimationMode('sitting',
+            new AnimationMode( // TODO: make directional sitting animations
+                Helper.PathsToImgs([Femalestudentsitting, Femalestudentsitting, Femalestudentsitting, Femalestudentsitting]),
+                1, 0
+            )
+        );
 
         this.playerObject = userCharacter;
         this.dynamicObjects.push(userCharacter);
+    }
 
+    defGameLogic(): void {
+        this.createRouteGraph();
+        this.createPlayer();
         // define chair zones
         // for each chair: [upper-left], width, height
         const chairZones: Array<[Vector, number, number]> = [

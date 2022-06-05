@@ -1,37 +1,29 @@
 import Globals from './Globals';
 import Vector from './Vector';
+import WVector from './WVector';
 import Scene from './Scene';
+import AnimationMode from './AnimationMode';
+import RouteNode from './RouteNode';
 
 export default class DynamicObject {
-    height: number;
-    width: number;
 
-    sprite: HTMLImageElement;
+  height: number;
+  width: number;
 
-    // N, W, S, E
-    spritesIdle!: [
-        HTMLImageElement,
-        HTMLImageElement,
-        HTMLImageElement,
-        HTMLImageElement];
+  sprite: HTMLImageElement;
 
-    // N, W, S, E
-    spritesWalk!: [
-        HTMLImageElement,
-        HTMLImageElement,
-        HTMLImageElement,
-        HTMLImageElement];
+  currAnimationMode!: AnimationMode;
+  animationModes: { [key: string]: AnimationMode } = {};
 
-  position: Vector; // current x, y position
+  spriteSitting!: HTMLImageElement;
 
-  movementRoute: Vector[] = []; // a list of x, y position objects
-  positionOnRoute: number = 0; // an index of the current position in the above route
+  position!: WVector; // current x, y position
+  routePosition: RouteNode;
+
+  movementRoute: RouteNode[] = []; // a list of x, y position objects
+  stepOfRoute: number = 0; // an index of the current position in the above route
   movementSpeed: number;
   distToNextPoint: number = 0;
-
-  animationStep: number = 0; // current animation frame of the sprite-sheet
-  animationFrames: number; // total amount of animation frames in sprite-sheet
-  animationSpeed: number; // animation frames per second
 
   // this is used to check when the animate method was last called
   // to prevent double animation calls in one frame
@@ -40,42 +32,28 @@ export default class DynamicObject {
   constructor(height: number,
               width: number,
               sprite: HTMLImageElement,
-              animationFrames: number, animationSpeed: number,
-              idleSpritePaths: string[], walkSpritePaths: string[]) {
+              routePosition: RouteNode) {
     this.height = height;
     this.width = width;
     this.sprite = sprite;
-    this.animationFrames = animationFrames;
-    this.animationSpeed = animationSpeed;
-    this.position = new Vector(0, 0);
+    this.routePosition = routePosition;
+    this.setPos(routePosition.position.x, routePosition.position.y)
     this.movementSpeed = 0;
-    this.setSprites(idleSpritePaths, walkSpritePaths);
   }
 
-  setSprites(idleSpritePaths: string[], walkSpritePaths: string[]) {
-    this.spritesIdle = [new Image(), new Image(), new Image(), new Image()];
-    for (let i = 0, len = this.spritesIdle.length; i < len; i++) {
-        this.spritesIdle[i].src = idleSpritePaths[i];
-    }
-    this.spritesWalk = [new Image(), new Image(), new Image(), new Image()];
-    for (let i = 0, len = this.spritesWalk.length; i < len; i++) {
-        this.spritesWalk[i].src = walkSpritePaths[i];
-    }
+  addAnimationMode(name: string, mode: AnimationMode) {
+    if (!this.currAnimationMode) this.currAnimationMode = mode; // the first assigned animation mode becomes the initial mode
+    this.animationModes[name] = mode;
   }
 
-  setMovementRoute(route: Vector[]) {
-    // adjust route points for object size
-    const adjustedRoute = route.map((pos: Vector) => {
-      const adjustedPos: Vector = pos;
-      adjustedPos.x -= this.width / 2;
-      adjustedPos.y -= this.height;
-      return adjustedPos;
-    });
-    this.movementRoute = adjustedRoute;
-    this.positionOnRoute = 0;
-    const firstPoint: Vector = route[0];
-    this.setPos(firstPoint.x, firstPoint.y);
-    this.distToNextPoint = firstPoint.distanceTo(route[1]);
+  setMovementRoute(route: RouteNode[]) {
+    // if the object already has a route, prepend the current step of the route to the new one.
+    if (this.movementRoute.length > 0) this.movementRoute =
+      [...this.movementRoute.splice(this.stepOfRoute,this.stepOfRoute+1) ,...route];
+    else this.movementRoute = route;
+
+    this.stepOfRoute = 0;
+    if (route.length > 0) this.distToNextPoint = this.position.distanceTo(route[1].position);
   }
 
   setMovementSpeed(speed: number): void {
@@ -83,70 +61,88 @@ export default class DynamicObject {
   }
 
   setPos(x: number, y: number): void {
-    this.position = new Vector(x, y);
+    const adjustedPos: Vector = new Vector(x, y);
+    adjustedPos.x -= this.width / 2;
+    adjustedPos.y -= this.height;
+    this.position = adjustedPos;
+  }
+
+  getPos(): Vector {
+    const p = new Vector(this.position.x, this.position.y);
+    p.x += this.width / 2;
+    p.y += this.height;
+    return p
   }
 
   selectSprite(direction: Vector): void {
-    if (direction.x === 0 && direction.y === 0) {
-      this.sprite = this.spritesIdle[2];
-    } else if (Math.abs(direction.x) > Math.abs(direction.y)) {
-      // horizontal movement is stronger
-      if (direction.x > 0) this.sprite = this.spritesWalk[3];
-      else this.sprite = this.spritesWalk[1];
-    } else {
-      // vertical movement is stronger
-      if (direction.y > 0) this.sprite = this.spritesWalk[2];
-      else this.sprite = this.spritesWalk[0];
-    }
+    //if (direction.x === 0 && direction.y === 0) {
+    //  this.sprite = this.spritesIdle[2];
+    //} else if (Math.abs(direction.x) > Math.abs(direction.y)) {
+    //  // horizontal movement is stronger
+    //  if (direction.x > 0) this.sprite = this.spritesWalk[3];
+    //  else this.sprite = this.spritesWalk[1];
+    //} else {
+    //  // vertical movement is stronger
+    //  if (direction.y > 0) this.sprite = this.spritesWalk[2];
+    //  else this.sprite = this.spritesWalk[0];
+    //}
   }
 
   moveOnRoute(): void {
-    if (this.positionOnRoute < this.movementRoute.length - 1) {
-      const target: Vector = this.movementRoute[this.positionOnRoute + 1];
-      const direction = new Vector(
-        target.x - this.position.x,
-        target.y - this.position.y,
-      );
+    // if the end of the route has been reached, no movement is required. instead, clear the current route
+    if (this.stepOfRoute >= this.movementRoute.length-1) {
+      this.stepOfRoute = 0;
+      this.movementRoute = []
+      return;
+    } else {
+      const deltaTime: number = Globals.getActiveAnimator().getDeltaTime(); // will be used a couple of times, so short name is better
+      const target: WVector = this.movementRoute[this.stepOfRoute + 1].position;  // the current next node in the route
 
-      this.selectSprite(direction);
+      // check if the next step would reach the target
+      const lookAheadDistance = this.distToNextPoint - (this.movementSpeed * deltaTime);
+      if (lookAheadDistance <= 0) {
+        this.setPos(target.x, target.y);
+        this.stepOfRoute++;
+
+        // prepare for the next part of the route
+        if (this.stepOfRoute < this.movementRoute.length - 1) {
+          this.routePosition = this.movementRoute[this.stepOfRoute+1]; // the route position is always the target of the walk
+          const nextNode: RouteNode = this.movementRoute[this.stepOfRoute+1];
+          this.distToNextPoint = this.position.distanceTo(nextNode.position);
+        }
+        return
+      } else {
+        // since this step will not reach the target, just move as expected
+        const currPos: WVector = this.getPos();
+        const direction = new Vector(
+          target.x - currPos.x,
+          target.y - currPos.y,
+        );
 
       // normalizing the direction vector
-      const normDirection: Vector = direction.normalized();
-
-      // this will be used a couple times, so make is short
-      const deltaTime: number = Globals.getActiveAnimator().getDeltaTime();
-      // check if route point already reached
-      this.distToNextPoint -=
-          this.movementSpeed * deltaTime;
-
-      if (this.distToNextPoint < 0) {
-        this.setPos(target.x, target.y);
-        this.positionOnRoute += 1;
-        // only calculate the next distance only if the end hasn't
-        // been reached yet.
-        if (this.positionOnRoute < this.movementRoute.length - 1) {
-          this.distToNextPoint = this.position.distanceTo(
-              this.movementRoute[this.positionOnRoute + 1]);
-        }
-      } else {
+      const nDirection: Vector = direction.normalized();
+        // if the route point has not been reached
+        const p: WVector = this.getPos();
         this.setPos(
-          this.position.x + normDirection.x * deltaTime * this.movementSpeed,
-          this.position.y + normDirection.y * deltaTime * this.movementSpeed,
+          p.x + nDirection.x * deltaTime * this.movementSpeed,
+          p.y + nDirection.y * deltaTime * this.movementSpeed,
         );
+        this.distToNextPoint = p.distanceTo(target);
       }
-    } else {
-      // if not moving, do...
-      this.selectSprite(new Vector(0, 0));
     }
   }
 
   animate(): void {
+    if (Object.keys(this.animationModes).length <= 0) {
+      console.log("Tried to animate dynamic object without any assigned animationModes!")
+      return
+    }
     // prevent animation from progressing multiple times each frame
     // if the obj is rendered multiple times by comparing the last timestamp with the current one
     if (this.lastTime !== Globals.getActiveAnimator().currTime) {
-      this.animationStep +=
-          Globals.getActiveAnimator().getDeltaTime() * this.animationSpeed;
-      if (this.animationStep > this.animationFrames) this.animationStep = 0;
+      this.currAnimationMode.animationStep +=
+          Globals.getActiveAnimator().getDeltaTime() * this.currAnimationMode.animationSpeed;
+      if (this.currAnimationMode.animationStep > this.currAnimationMode.animationFrames) this.currAnimationMode.animationStep = 0;
     }
     this.lastTime = Globals.getActiveAnimator().currTime;
   }
@@ -154,7 +150,7 @@ export default class DynamicObject {
   draw(ctx: CanvasRenderingContext2D, scene: Scene): void {
     ctx.drawImage(
       this.sprite,
-      Math.floor(this.animationStep) * this.width, 0,
+      Math.floor(this.currAnimationMode.animationStep) * this.width, 0,
       32, 32,
       this.position.x * scene.sizeFactor,
       this.position.y * scene.sizeFactor,
