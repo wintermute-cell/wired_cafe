@@ -10,9 +10,9 @@ export default class AnimationMode {
 
     constructor(
         spriteSets: HTMLImageElement[],
-        animationSpeed: number, animationFrames: number) {
+        animationFrames: number, animationSpeed: number) {
         this.spriteSets = spriteSets;
-        this.animationSpeed = animationSpeed;
         this.animationFrames = animationFrames;
+        this.animationSpeed = animationSpeed;
     }
 }

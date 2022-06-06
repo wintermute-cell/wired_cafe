@@ -14,6 +14,7 @@ export default class DynamicObject {
 
   currAnimationMode!: AnimationMode;
   animationModes: { [key: string]: AnimationMode } = {};
+  lookDirection: Vector = new Vector(0, -1); // default south
 
   spriteSitting!: HTMLImageElement;
 
@@ -44,6 +45,14 @@ export default class DynamicObject {
   addAnimationMode(name: string, mode: AnimationMode) {
     if (!this.currAnimationMode) this.currAnimationMode = mode; // the first assigned animation mode becomes the initial mode
     this.animationModes[name] = mode;
+  }
+
+  setAnimationMode(name: string) {
+    const mode: AnimationMode = this.animationModes[name];
+    if (mode && this.currAnimationMode !== mode) {
+      console.log(name);
+      this.currAnimationMode = mode;
+    }
   }
 
   setMovementRoute(route: RouteNode[]) {
@@ -91,9 +100,11 @@ export default class DynamicObject {
     // if the end of the route has been reached, no movement is required. instead, clear the current route
     if (this.stepOfRoute >= this.movementRoute.length-1) {
       this.stepOfRoute = 0;
-      this.movementRoute = []
+      this.movementRoute = [];
+      this.setAnimationMode('idle');
       return;
     } else {
+      this.setAnimationMode('moving');
       const deltaTime: number = Globals.getActiveAnimator().getDeltaTime(); // will be used a couple of times, so short name is better
       const target: WVector = this.movementRoute[this.stepOfRoute + 1].position;  // the current next node in the route
 
@@ -117,9 +128,10 @@ export default class DynamicObject {
           target.y - currPos.y,
         );
 
-      // normalizing the direction vector
-      const nDirection: Vector = direction.normalized();
-        // if the route point has not been reached
+        // normalizing the direction vector
+        const nDirection: Vector = direction.normalized();
+        this.lookDirection = nDirection;
+
         const p: WVector = this.getPos();
         this.setPos(
           p.x + nDirection.x * deltaTime * this.movementSpeed,
@@ -140,14 +152,14 @@ export default class DynamicObject {
     if (this.lastTime !== Globals.getActiveAnimator().currTime) {
       this.currAnimationMode.animationStep +=
           Globals.getActiveAnimator().getDeltaTime() * this.currAnimationMode.animationSpeed;
-      if (this.currAnimationMode.animationStep > this.currAnimationMode.animationFrames) this.currAnimationMode.animationStep = 0;
+      if (this.currAnimationMode.animationStep > this.currAnimationMode.animationFrames) this.currAnimationMode.animationStep = 0; // loop
     }
     this.lastTime = Globals.getActiveAnimator().currTime;
   }
 
   draw(ctx: CanvasRenderingContext2D, scene: Scene): void {
     ctx.drawImage(
-      this.sprite,
+      this.currAnimationMode.spriteSets[this.lookDirection.toDirectionIndex()],
       Math.floor(this.currAnimationMode.animationStep) * this.width, 0,
       32, 32,
       this.position.x * scene.sizeFactor,

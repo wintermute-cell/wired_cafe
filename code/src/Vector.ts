@@ -32,4 +32,19 @@ export default class Vector {
         else
             return new Vector(0, 0);
     }
+
+    toDirectionIndex(): number {
+        let result: number = 0;
+        if (Math.abs(this.x) > Math.abs(this.y)) {
+            // horizontal axis is stronger
+            if (this.x > 0) result = 1;
+            else result = 3;
+
+        } else {
+            // vertical axis is stronger
+            if (this.y > 0) result = 2;
+            else result = 0;
+        }
+        return result;
+    }
 }

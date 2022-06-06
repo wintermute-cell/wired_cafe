@@ -21,6 +21,11 @@ const Femalestudentwalkingnorth: string = '../resources/characters/female_studen
 const Femalestudentwalkingsouth: string = '../resources/characters/female_student/Femalestudentwalkingsouth-sheet.png';
 const Femalestudentwalkingwest: string = '../resources/characters/female_student/Femalestudentwalkingwest-sheet.png';
 
+const Femalestudentidleeast: string = '../resources/characters/female_student/Femalestudentidleeast-sheet.png';
+const Femalestudentidlenorth: string = '../resources/characters/female_student/Femalestudentidlenorth-sheet.png';
+const Femalestudentidlesouth: string = '../resources/characters/female_student/Femalestudentidlesouth-sheet.png';
+const Femalestudentidlewest: string = '../resources/characters/female_student/Femalestudentidlewest-sheet.png';
+
 const Femalestudentsitting: string = '../resources/characters/female_student/Femalestudentsitting.png'
 
 
@@ -128,7 +133,6 @@ export default class ClassroomScene implements Scene {
         this.realWidth = this.originalWidth * this.sizeFactor;
         this.realHeight = this.originalHeight * this.sizeFactor;
 
-        // TODO: should preferably use the resize methods, but they dont work lol
         this.resizeStaticLayer();
         this.resizeDynamicLayer();
     }
@@ -139,15 +143,15 @@ export default class ClassroomScene implements Scene {
         for (let i = 0; i < this.chairZones.length; i++) {
             const chair = this.chairZones[i];
             if (this.isWithinInteractiveObject(mousePos, chair)) {
-                console.log('in chair');
                 if (true) { // TODO: if server says the seat is empty
                     this.playerObject.setMovementRoute(
                         this.routeGraph.getRoute(
-                            this.playerObject.routePosition, this.routeGraph.getClosestNodeTo(chair.position)
+                            this.playerObject.routePosition, this.routeGraph.getClosestNodeTo(
+                                new Vector(chair.position.x, (chair.position.y+chair.height))) // use the lower left corner of the chair
                         )
-                    )
+                    );
                 }
-                break // no need to look at the other chairs
+                break; // no need to look at the other chairs
             }
         }
     }
@@ -397,30 +401,54 @@ export default class ClassroomScene implements Scene {
         let fr_sec = nn(358, 231);
         let fr_thrd = nn(358, 199);
         let fr_frth = nn(358, 167);
+        let fr_first_chair = nn(370, 263);
+        let fr_sec_chair = nn(370, 231);
+        let fr_thrd_chair = nn(370, 199);
+        let fr_frth_chair = nn(370, 167);
         below_first_row.addBidNeighbour(fr_first);
         fr_first.addBidNeighbour(fr_sec);
         fr_sec.addBidNeighbour(fr_thrd);
         fr_thrd.addBidNeighbour(fr_frth);
+        fr_first.addBidNeighbour(fr_first_chair);
+        fr_sec.addBidNeighbour(fr_sec_chair);
+        fr_thrd.addBidNeighbour(fr_thrd_chair);
+        fr_frth.addBidNeighbour(fr_frth_chair);
 
         // second row
         let sc_first = nn(294, 263);
         let sc_sec = nn(294, 231);
         let sc_thrd = nn(294, 199);
         let sc_frth = nn(294, 167);
+        let sc_first_chair = nn(306, 263);
+        let sc_sec_chair = nn(306, 231);
+        let sc_thrd_chair = nn(306, 199);
+        let sc_frth_chair = nn(306, 167);
         below_sec_row.addBidNeighbour(sc_first);
         sc_first.addBidNeighbour(sc_sec);
         sc_sec.addBidNeighbour(sc_thrd);
         sc_thrd.addBidNeighbour(sc_frth);
+        sc_first.addBidNeighbour(sc_first_chair);
+        sc_sec.addBidNeighbour(sc_sec_chair);
+        sc_thrd.addBidNeighbour(sc_thrd_chair);
+        sc_frth.addBidNeighbour(sc_frth_chair);
 
         // third row
         let th_first = nn(230, 263);
         let th_sec = nn(230, 231);
         let th_thrd = nn(230, 199);
         let th_frth = nn(230, 167);
+        let th_first_chair = nn(242, 263);
+        let th_sec_chair = nn(242, 231);
+        let th_thrd_chair = nn(242, 199);
+        let th_frth_chair = nn(242, 167);
         below_thrd_row.addBidNeighbour(th_first);
         th_first.addBidNeighbour(th_sec);
         th_sec.addBidNeighbour(th_thrd);
         th_thrd.addBidNeighbour(th_frth);
+        th_first.addBidNeighbour(th_first_chair);
+        th_sec.addBidNeighbour(th_sec_chair);
+        th_thrd.addBidNeighbour(th_thrd_chair);
+        th_frth.addBidNeighbour(th_frth_chair);
 
         // add all the nodes to the scenes graph
         this.routeGraph = new RouteGraph(nodes);
@@ -433,16 +461,16 @@ export default class ClassroomScene implements Scene {
 
         const userCharacter: DynamicObject = new DynamicObject(32, 32, userCharacterSprite, this.routeGraph.nodes[0]);
         userCharacter.setMovementSpeed(30);
-        userCharacter.addAnimationMode('walking',
+        userCharacter.addAnimationMode('moving',
             new AnimationMode(
-                Helper.PathsToImgs([Femalestudentwalkingnorth, Femalestudentwalkingwest, Femalestudentwalkingsouth, Femalestudentwalkingeast]),
+                Helper.PathsToImgs([Femalestudentwalkingnorth, Femalestudentwalkingeast, Femalestudentwalkingsouth, Femalestudentwalkingwest]),
                 8, 5.5
             )
         );
         userCharacter.addAnimationMode('idle',
-            new AnimationMode( // TODO: put actual idle animations here goddamn
-                Helper.PathsToImgs([Femalestudentwalkingnorth, Femalestudentwalkingwest, Femalestudentwalkingsouth, Femalestudentwalkingeast]),
-                8, 5.5
+            new AnimationMode(
+                Helper.PathsToImgs([Femalestudentidlenorth, Femalestudentidleeast, Femalestudentidlesouth, Femalestudentidlewest]),
+                1, 5.5
             )
         );
         userCharacter.addAnimationMode('sitting',
