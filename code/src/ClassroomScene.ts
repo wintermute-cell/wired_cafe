@@ -340,8 +340,33 @@ export default class ClassroomScene implements Scene {
                     p.x * this.sizeFactor,
                     p.y * this.sizeFactor,
                     3 * this.sizeFactor,
-                    2 * this.sizeFactor);
+                    3 * this.sizeFactor);
                 ctx.stroke();
+
+                // draw routing information
+                for (let i = 0, len = dynObj.movementRoute.length;  i < len;  i++) {
+                    const node = dynObj.movementRoute[i];
+                    ctx.beginPath();
+                    ctx.fillStyle = 'purple';
+
+                    ctx.fillRect(
+                        node.position.x * this.sizeFactor,
+                        node.position.y * this.sizeFactor,
+                        4 * this.sizeFactor,
+                        4 * this.sizeFactor);
+                    ctx.stroke();
+
+                    const nextNode = dynObj.movementRoute[i+1];
+                    ctx.strokeStyle = 'purple';
+                    if (nextNode === dynObj.routePosition) ctx.strokeStyle = 'lightblue';
+                    ctx.lineWidth = 2;
+                    if (nextNode) {
+                        ctx.beginPath();
+                        ctx.moveTo(node.position.x * this.sizeFactor, node.position.y * this.sizeFactor);
+                        ctx.lineTo(nextNode.position.x * this.sizeFactor, nextNode.position.y * this.sizeFactor);
+                        ctx.stroke();
+                    }
+                }
             }
         }
     }

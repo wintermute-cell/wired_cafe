@@ -47,13 +47,12 @@ export default class DynamicObject {
   }
 
   setMovementRoute(route: RouteNode[]) {
-    // if the object already has a route, prepend the current step of the route to the new one.
-    if (this.movementRoute.length > 0) this.movementRoute =
-      [...this.movementRoute.splice(this.stepOfRoute,this.stepOfRoute+1) ,...route];
-    else this.movementRoute = route;
-
-    this.stepOfRoute = 0;
-    if (route.length > 0) this.distToNextPoint = this.position.distanceTo(route[1].position);
+    if (route.length > 0) {
+      this.movementRoute = route;
+      this.stepOfRoute = 0;
+      this.distToNextPoint = this.position.distanceTo(route[1].position);
+      this.routePosition = route[1];
+    }
   }
 
   setMovementSpeed(speed: number): void {
@@ -107,8 +106,7 @@ export default class DynamicObject {
         // prepare for the next part of the route
         if (this.stepOfRoute < this.movementRoute.length - 1) {
           this.routePosition = this.movementRoute[this.stepOfRoute+1]; // the route position is always the target of the walk
-          const nextNode: RouteNode = this.movementRoute[this.stepOfRoute+1];
-          this.distToNextPoint = this.position.distanceTo(nextNode.position);
+          this.distToNextPoint = this.position.distanceTo(this.routePosition.position);
         }
         return
       } else {
