@@ -2,6 +2,7 @@
   import {fade} from 'svelte/transition';
   import Frontpage from './view/Frontpage.svelte';
   import Clientpage from './view/Clientpage.svelte';
+  import Receptionist from './view/Receptionist.svelte';
 
   let currentView: any = Frontpage;
 
@@ -20,12 +21,15 @@
 
 <main>
   <button on:click={() => setView(Frontpage)}>Front</button>
+  <button on:click={() => setView(Receptionist)}>Reception</button>
   <button on:click={() => setView(Clientpage)}>Client</button>
   {#if currentView == targetView}
     <div id="viewport" on:outroend={_setView} transition:fade>
       <svelte:component
         this={currentView}
-        clientPageFunction={() => setView(Clientpage)}
+        gotoFrontpage={() => setView(Frontpage)}
+        gotoReceptionist={() => setView(Receptionist)}
+        gotoClientpage={() => setView(Clientpage)}
       />
     </div>
   {/if}
@@ -49,9 +53,14 @@
     --bg-color: #fdf6e3;
     --bg-color-dark: #f8ecd0;
     --bg-texture: url('./assets/pattern/halftone.png');
+    --correct-color: #989a49;
+    --err-color: #d16553;
+    --warn-color: #f4d47d;
     --shadow-color: 44deg 28% 59%;
     --shadow-inset-low: inset 0.3px 0.3px 0.5px hsl(var(--shadow-color) / 0.34);
-    --shadow-inset-medium: inset 2.6px 2.6px 4.1px -1.7px hsl(var(--shadow-color) / 0.36);
+    --shadow-inset-medium: inset 2.6px 2.6px 4.1px -1.7px hsl(var(
+            --shadow-color
+          ) / 0.36);
     --shadow-elevation-low: 0.3px 0.3px 0.5px hsl(var(--shadow-color) / 0.34),
       0.5px 0.5px 0.8px -1.2px hsl(var(--shadow-color) / 0.34),
       1.3px 1.3px 2.1px -2.5px hsl(var(--shadow-color) / 0.34);
@@ -75,6 +84,16 @@
     background-size: 50%;
     position: relative;
     z-index: 0;
+    -ms-overflow-style: none; /* Internet Explorer 10+ */
+    scrollbar-width: none; /* Firefox */
+  }
+  :global(body::-webkit-scrollbar, html::-webkit-scrollbar) {
+    display: none; /* Safari and Chrome */
+  }
+  :global(::-moz-selection, ::selection) {
+    /* Code for Firefox */
+    color: var(--daccent);
+    background: var(--laccent);
   }
 
   :global(.noselect) {

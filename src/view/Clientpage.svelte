@@ -1,9 +1,8 @@
 <script lang="ts">
-  import TaskRecorder from './ClientpageComponents/Receptionist.svelte';
 </script>
 
 <main>
-  <TaskRecorder />
+  Cafe
 </main>
 
 <style>

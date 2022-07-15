@@ -2,7 +2,10 @@
   import {fade} from 'svelte/transition';
   import LoginForm from './FrontpageComponents/LoginForm.svelte';
   import RegistrationForm from './FrontpageComponents/RegistrationForm.svelte';
-  export let clientPageFunction = () => {};
+
+  export let gotoFrontpage;
+  export let gotoClientpage;
+  export let gotoReceptionist;
 
   let showLoginForm = false;
   function activateLoginForm() {
@@ -18,7 +21,7 @@
 
 <main>
   <div id="client-type-card-container">
-    <div class="client-type-card noselect" on:click={clientPageFunction}>
+    <div class="client-type-card noselect" on:click={gotoReceptionist}>
       Guest
     </div>
     <div class="client-type-card noselect" on:click={activateLoginForm}>
